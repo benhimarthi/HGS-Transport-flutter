@@ -189,6 +189,12 @@ class _LoginPageState extends State<LoginPage> {
         await HelperFunction.saveUserLoggedInStatus(true);
         await HelperFunction.saveUserEmailSF(email);
         await HelperFunction.saveUserNameSF(snp.get("fullName"));
+        HelperFunction.userInformations.name = snp.get("fullName");
+        HelperFunction.userInformations.mailAddress = email;
+        HelperFunction.userInformations.imageLink = snp.get('profilePic');
+        HelperFunction.userInformations.mode = snp.get("profile");
+        HelperFunction.userInformations.uid = snp.get('uid');
+        HelperFunction.userInformations.statu = snp.get('connectivityStatu');
         nextScreenReplace(context, const HomePage());
       } else {
         showSnackbar(context, Colors.red, value);
