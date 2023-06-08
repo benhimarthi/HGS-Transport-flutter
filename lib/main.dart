@@ -1,7 +1,15 @@
 import 'package:chatty/helper/helper_function.dart';
-import 'package:chatty/pages/auth/UserProfile.dart';
+import 'package:chatty/pages/auth/register_page.dart';
+import 'package:chatty/pages/home/DriverViews/CallTimer.dart';
+import 'package:chatty/pages/home/DriverViews/DriverSelfProfile.dart';
+import 'package:chatty/pages/home/DriverViews/GraphMap.dart';
+import 'package:chatty/pages/home/DriverViews/HomePageDriver.dart';
+import 'package:chatty/pages/home/DriverViews/Statistic.dart';
 import 'package:chatty/pages/home/Home.dart';
-import 'package:chatty/pages/home/Profile.dart';
+import 'package:chatty/helper/galeryImage.dart';
+import 'package:chatty/pages/home/HomeBody.dart';
+import 'package:chatty/pages/home/SearchUser.dart';
+import 'package:chatty/pages/home/test.dart';
 import 'package:chatty/shared/constants.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +64,8 @@ class _MyAppState extends State<MyApp> {
           scaffoldBackgroundColor: Colors.white,
         ),
         debugShowCheckedModeBanner: false,
-        home: Profile() //_isSignedIn ? const HomePage() : const LoginPage(),
+        home:
+            HomePageDriver() //_isSignedIn ? const HomePage() : const LoginPage(),
         );
-  }
+  } // //
 }

@@ -32,12 +32,26 @@ dependencies:
   firebase_auth: ^4.2.5
   firebase_core: ^2.4.1
   firebase_database:
+  firebase_storage: 
   flutter:
     sdk: flutter
   
-  #google_maps_flutter: ^2.2.5
-  http: ^0.13.5
+  google_maps_flutter:
+  json_serializable: 
+  geolocator: 
+  flutter_polyline_points: 
+  flutter_svg: 
+  location: 
+  http: 
   shared_preferences: ^2.0.17
+  dio: 
+  retrofit: 
+  grpc:
+  web_socket_channel:
+  fl_chart: 
+  syncfusion_flutter_gauges: 
+  image_picker: 
+  
 
 dev_dependencies:
 
@@ -64,6 +78,20 @@ flutter:
      - assets/images/ml.png
      - assets/images/driver.png
      - assets/images/people.png
+     - assets/images/profile_image/ani.jpg
+     - assets/images/profile_image/kakashi.jpg
+     - assets/images/profile_image/alita.jpg
+     - assets/images/profile_image/amina.jpg
+     - assets/images/profile_image/angel.jpg
+     - assets/images/profile_image/anies.jpg
+     - assets/images/profile_image/anita.jpg
+     - assets/images/profile_image/anni.jpg
+     - assets/images/profile_image/kakashi_wood.jpg
+     - assets/images/profile_image/kurama_child.jpg
+     - assets/images/profile_image/naruto_child.jpg
+     - assets/images/profile_image/naruto.jpg
+     - assets/images/profile_image/skull_warrior.jpg
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
   # For details regarding adding assets from package dependencies, see

@@ -48,6 +48,7 @@ class _PathEvaluatorState extends State<PathEvaluator> {
                   height: 15,
                 ),
                 TextInput(
+                    defaultValue: "",
                     isPassword: false,
                     placeholder: "Departure point",
                     prefixIcon: const Icon(
@@ -61,6 +62,7 @@ class _PathEvaluatorState extends State<PathEvaluator> {
                   height: 15,
                 ),
                 TextInput(
+                    defaultValue: "",
                     isPassword: false,
                     placeholder: "Departure point",
                     prefixIcon: const Icon(

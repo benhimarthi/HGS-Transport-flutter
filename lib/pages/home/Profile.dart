@@ -1,8 +1,9 @@
-import 'dart:io';
-
 import 'package:chatty/pages/home/ProfileBody.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
+import '../../helper/helper_function.dart';
+import '../../service/database_service.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -11,22 +12,27 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  Future<void> getInfos() async {
-    //http.Response
-    //var url = "http://localhost:8088/geocode?address=haysalm";
-    //var resp = await http.get(Uri.parse(url)); //Uri.http("localhost:8088", "/geocode", {"address": "haysalam"})
-    //Uri.http("localhost:8088", "/geocode", {"address": "haysalam"});
-    final client = HttpClient();
-    final request = await client
-        .getUrl(Uri.parse('http://localhost:8088/geocode?address=haysalm'));
-    final response = await request.close();
+  late DatabaseService databaseService;
+  late FirebaseStorage storage;
+  String url = "";
+
+  Future<void> setImg(ref) async {
+    url = await ref.getDownloadURL();
+    setState(() {});
   }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    getInfos();
+    databaseService = DatabaseService(uid: HelperFunction.userInformations.uid);
+    storage = FirebaseStorage.instance;
+
+    if (HelperFunction.userInformations.imageLink != "") {
+      Reference ref =
+          storage.ref().child(HelperFunction.userInformations.imageLink);
+      setImg(ref);
+    }
   }
 
   @override
@@ -44,43 +50,25 @@ class _ProfileState extends State<Profile> {
                 borderRadius: BorderRadius.all(Radius.circular(15))),
           )),
       appBar: AppBar(
+        centerTitle: true,
         title: const Text(
           "Home",
           style: TextStyle(
               color: Color.fromARGB(255, 76, 76, 76),
               fontWeight: FontWeight.bold),
         ),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Color.fromARGB(255, 53, 181, 222),
-          ),
-          onPressed: () {},
-        ),
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: const Color.fromARGB(255, 182, 206, 225),
         actions: [
-          MaterialButton(
-            onPressed: () {},
-            child: Container(
-              padding: const EdgeInsets.all(3),
-              width: MediaQuery.of(context).size.width * .3,
-              height: 35,
-              decoration: const BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.all(Radius.circular(50))),
-              child: const Center(
-                child: Text(
-                  "Deconnexion",
-                  style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          )
+          IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.logout,
+                color: Colors.red,
+              ))
         ],
       ),
-      body: ProfileBody(),
+      body: ProfileBody(imgUrl: url),
     );
   }
 }

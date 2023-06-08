@@ -1,6 +1,18 @@
+import 'package:chatty/helper/helper_function.dart';
+import 'package:chatty/model/comment.item.model.dart';
+import 'package:chatty/model/driver.item.dart';
 import 'package:chatty/pages/home/CallConductor.dart';
+import 'package:chatty/pages/home/CommentView.dart';
+import 'package:chatty/pages/home/DrawerMenu.dart';
+import 'package:chatty/pages/home/DriverItem.dart';
+import 'package:chatty/pages/home/MapManager.dart';
+import 'package:chatty/pages/home/Profile.dart';
+import 'package:chatty/pages/search_page.dart';
+import 'package:chatty/service/map.service.manager.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-//import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
+import '../../service/database_service.dart';
 import '../../widgets/widgets.dart';
 import '../auth/UserProfile.dart';
 import 'ConfigureTrajectory.dart';
@@ -12,133 +24,138 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-double bottomSheetHeight = 460;
+late double bottomSheetHeight;
+bool showCallView = false;
+Position? currentLocation;
 
 class _HomePageState extends State<HomePage> {
-  bool t = true;
-  bool showCallView = false;
+  bool showBottomView = true;
+  late DatabaseService databaseService;
+  late FirebaseStorage storage;
+  String url = "";
 
-  /*late GoogleMapController mapController;
-
-  late final LatLng _center = const LatLng(45.521563, -122.677433);
-  //late Position pos;
-
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
+  Future<void> setImg(ref) async {
+    url = await ref.getDownloadURL();
+    setState(() {});
   }
-*/
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    //_center = LatLng(pos.latitude, pos.longitude);
+    MapServiceManager().getCurrentLocation().then((value) {
+      currentLocation = value;
+      HelperFunction.userLocation.latitude = value.latitude;
+      HelperFunction.userLocation.longitude = value.longitude;
+      HelperFunction.departurePoint = HelperFunction.userLocation;
+    });
+
+    bottomSheetHeight = 430;
+
+    databaseService = DatabaseService(uid: HelperFunction.userInformations.uid);
+    storage = FirebaseStorage.instance;
+
+    if (HelperFunction.userInformations.imageLink != "") {
+      Reference ref =
+          storage.ref().child(HelperFunction.userInformations.imageLink);
+      setImg(ref);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    Reference ref =
+        storage.ref().child(HelperFunction.userInformations.imageLink);
+    setImg(ref);
     return Scaffold(
       bottomSheet: Container(
+          color: const Color.fromARGB(
+              182, 182, 206, 225), //const Color.fromARGB(255, 182, 206, 225)
           padding: const EdgeInsets.all(5),
           height: bottomSheetHeight,
-          child: SingleChildScrollView(
-              child: Column(
+          width: double.infinity,
+          child: Column(
             children: [
-              GestureDetector(
-                  onVerticalDragEnd: (dr) {
-                    setState(() {
-                      if (bottomSheetHeight >= 210) {
-                        bottomSheetHeight = 460;
-                      } else {
-                        bottomSheetHeight = 90;
-                      }
-                    });
-                  },
-                  onVerticalDragUpdate: (details) {
-                    setState(() {
-                      if (bottomSheetHeight <= 465 &&
-                          details.delta.direction < 0) {
-                        bottomSheetHeight -= 1.2 * details.delta.direction;
-                      } else if (bottomSheetHeight >= 100 &&
-                          details.delta.direction > 0) {
-                        bottomSheetHeight -= 1.2 * details.delta.direction;
-                      }
-                    });
-                  },
-                  child: SizedBox(
-                    height: 20,
-                    child: Center(
-                      child: Container(
-                        height: 3,
-                        width: MediaQuery.of(context).size.width * .1,
-                        decoration: const BoxDecoration(
-                            color: Colors.grey,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(50))),
-                      ),
-                    ),
-                  )),
-              showCallView
-                  ? const CallDriver()
-                  : Column(
-                      children: [
-                        const ConfigureTrajectory(),
-                        MaterialButton(
-                          onPressed: () {
+              Container(
+                margin: const EdgeInsets.only(top: 0),
+                height: MediaQuery.of(context).size.height * .04,
+                width: MediaQuery.of(context).size.width * .2,
+                decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(10),
+                        bottomRight: Radius.circular(10)),
+                    //color: Color.fromARGB(255, 53, 181, 222),
+                    gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color.fromARGB(182, 199, 221, 239),
+                          Color.fromARGB(255, 65, 195, 238)
+                        ])),
+                child: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        showBottomView = showBottomView ? false : true;
+                        if (showBottomView) {
+                          bottomSheetHeight =
+                              MediaQuery.of(context).size.height * .56;
+                        } else {
+                          bottomSheetHeight =
+                              MediaQuery.of(context).size.height * .2;
+                        }
+                      });
+                    },
+                    icon: Icon(
+                      showBottomView
+                          ? Icons.arrow_drop_down
+                          : Icons.arrow_drop_up,
+                      color: Colors.white,
+                    )),
+              ),
+              Container(
+                //height: MediaQuery.of(context).size.height * .,
+                decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(50))),
+                child: showBottomView
+                    ? const ConfigureTrajectory()
+                    : MaterialButton(
+                        onPressed: () {
+                          setState(() {
                             setState(() {
-                              showCallView =
-                                  showCallView == true ? false : true;
+                              showBottomView = showBottomView ? false : true;
+                              if (showBottomView) {
+                                bottomSheetHeight =
+                                    MediaQuery.of(context).size.height * .56;
+                              } else {
+                                bottomSheetHeight =
+                                    MediaQuery.of(context).size.height * .2;
+                              }
                             });
-                          },
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * .8,
-                            height: 50,
-                            decoration: const BoxDecoration(
-                              color: Color.fromARGB(255, 53, 181, 222),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10)),
-                            ),
-                            child: const Padding(
-                              padding: EdgeInsets.all(3),
-                              child: Center(
-                                child: Text(
-                                  "Call a driver",
-                                  style: TextStyle(color: Colors.white),
-                                ),
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.all(10),
+                          width: MediaQuery.of(context).size.width * .8,
+                          height: 50,
+                          decoration: const BoxDecoration(
+                            color: Color.fromARGB(255, 53, 181, 222),
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.all(3),
+                            child: Center(
+                              child: Text(
+                                "Call a driver",
+                                style: TextStyle(color: Colors.white),
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+              )
             ],
-          ))),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
-              child: Text('Drawer Header'),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ),
-            ),
-            ListTile(
-              title: Text('Item 1'),
-              onTap: () {
-                // Update the UI based on the item selected
-                // ...
-              },
-            ),
-            ListTile(
-              title: Text('Item 2'),
-              onTap: () {
-                // Update the UI based on the item selected
-                // ...
-              },
-            ),
-          ],
-        ),
-      ),
+          )),
+      drawer: const Drawer(child: DrawerMenu()),
       extendBodyBehindAppBar: true,
       extendBody: true,
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
@@ -155,174 +172,114 @@ class _HomePageState extends State<HomePage> {
                   decoration: const BoxDecoration(
                     color: Color.fromARGB(255, 53, 181, 222),
                     borderRadius: BorderRadius.all(Radius.circular(50)),
-                    /*boxShadow: [
-                      BoxShadow(
-                          color: Color.fromARGB(255, 44, 44, 44),
-                          offset: Offset(0, 2),
-                          blurRadius: 2)
-                    ],*/
                   ),
                   child: IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        var dir = DatabaseService(
+                                uid: HelperFunction.userInformations.uid)
+                            .findUserByHisStatut()
+                            .then((value) {
+                          nextScreen(
+                              context,
+                              CommentView(
+                                commentModel:
+                                    DriverItemModel.fromJson(value.docs[0]),
+                              ));
+                        });
+                      },
                       icon: const Icon(
                         Icons.gps_fixed_sharp,
                         color: Color.fromARGB(255, 255, 255, 255),
                       )),
                 ),
-                /*Visibility(
-                    visible: t,
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      decoration: const BoxDecoration(
-                          /*boxShadow: [
-                        BoxShadow(
-                            color: Color.fromARGB(255, 44, 44, 44),
-                            offset: Offset(0, 2),
-                            blurRadius: 2)
-                      ],*/
-                          color: Color.fromARGB(255, 53, 181, 222),
-                          borderRadius: BorderRadius.all(Radius.circular(5))),
-                      child: IconButton(
-                          onPressed: () {
-                            nextScreen(context, const PathEvaluator());
-                          },
-                          icon: const Icon(
-                            Icons.assistant_direction_sharp,
-                            color: Colors.white,
-                          )),
-                    ))*/
               ],
             ),
           )),
-      /*persistentFooterButtons: t
-          ? [
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 1,
-                height: 55,
-                child: Center(
-                    child: MaterialButton(
-                  onPressed: () {
-                    nextScreen(context, const PathConfigured());
-                  },
-                  child: Container(
-                      width: MediaQuery.of(context).size.width * .7,
-                      decoration: const BoxDecoration(
-                          /*boxShadow: [
-                      BoxShadow(
-                          color: Color.fromARGB(255, 44, 44, 44),
-                          offset: Offset(0, .5),
-                          blurRadius: 1)
-                    ],*/
-                          color: Color.fromARGB(255, 53, 181, 222),
-                          borderRadius: BorderRadius.all(Radius.circular(50))),
-                      child: const Center(
-                        child: Text(
-                          "Command a car",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      )),
-                )),
-              )
-            ]
-          : null,*/
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         shadowColor: Colors.transparent,
         actions: [
           Container(
             height: 90,
-            width: MediaQuery.of(context).size.width * .88,
+            width: MediaQuery.of(context).size.width * .3,
             //color: Colors.red,
             padding: const EdgeInsets.all(5),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                /*Container(
-                  height: 45,
-                  width: 45,
-                  decoration: const BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                            color: Color.fromARGB(255, 44, 44, 44),
-                            offset: Offset(0, 2),
-                            blurRadius: 2)
-                      ],
-                      color: Color.fromARGB(255, 53, 181, 222),
-                      borderRadius: BorderRadius.all(Radius.circular(50))),
-                  child: Center(
-                    child: IconButton(
-                        onPressed: () {}, icon: const Icon(Icons.menu)),
-                  ),
-                ),*/
                 Container(
-                  width: MediaQuery.of(context).size.width * .65,
-                  height: 52,
+                  width: 42, //MediaQuery.of(context).size.width * .65,
+                  height: 42,
                   //padding: EdgeInsets.all(2),
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.all(Radius.circular(50)),
-                    boxShadow: [
+                    /*boxShadow: [
                       BoxShadow(
                           color: Color.fromARGB(255, 95, 95, 95),
                           offset: Offset(0, 2),
                           blurRadius: 2)
-                    ],
+                    ],*/
                   ),
                   child: Center(
-                    child: TextFormField(
-                        onChanged: (val) {},
-                        decoration: InputDecoration(
-                          hintText: "Search palce",
-                          border: InputBorder.none,
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            color: Colors.transparent,
-                          ),
-                          suffixIcon: IconButton(
-                              onPressed: () {}, icon: const Icon(Icons.search)),
-                        )),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.search,
+                        color: Color.fromARGB(255, 53, 181, 222),
+                      ),
+                      onPressed: () => nextScreen(
+                          context,
+                          Search(
+                            act: 'rd',
+                          )),
+                    ),
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    nextScreen(context, const UserProfile());
-                  },
-                  child: Container(
-                    height: 45,
-                    width: 45,
-                    decoration: const BoxDecoration(
-                        /* boxShadow: [
-                          BoxShadow(
-                              color: Color.fromARGB(255, 44, 44, 44),
-                              offset: Offset(0, 2),
-                              blurRadius: 2)
-                        ],*/
-                        color: Color.fromARGB(255, 53, 181, 222),
-                        borderRadius: BorderRadius.all(Radius.circular(50))),
-                    child: Center(),
-                  ),
-                )
+                HelperFunction.userInformations.imageLink == "" || url == ""
+                    ? GestureDetector(
+                        onTap: () {
+                          nextScreen(context, const Profile());
+                        },
+                        child: const CircleAvatar(
+                          //radius: 60,
+                          /*backgroundImage:
+                        AssetImage("assets/images/profile_image/naruto.jpg"),*/
+                          child: Icon(
+                            Icons.account_circle_sharp,
+                            //size: 120,
+                            color: Color.fromARGB(115, 255, 255, 255),
+                          ),
+                        ),
+                      )
+                    : GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            nextScreen(context, const Profile());
+                          });
+                        },
+                        child: CircleAvatar(
+                          child: ClipOval(
+                              child: Image.network(
+                            url,
+                            fit: BoxFit.fill,
+                          )),
+                        ),
+                      )
               ],
             ),
           )
         ],
         //leading: ,
       ),
-      body: Container(
-        color: Colors.amber,
-      ), /*GoogleMap(
-        myLocationEnabled: true,
-        zoomControlsEnabled: false,
-        //myLocationEnabled: true,
-        myLocationButtonEnabled: true,
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: CameraPosition(
-          target: _center,
-          zoom: 11.0,
-        ),
-      ),*/
+      body: currentLocation == null
+          ? Center(
+              child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor),
+            )
+          : MapManager(
+              currentPosition: currentLocation!,
+            ),
     );
   }
 }

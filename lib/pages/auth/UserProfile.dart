@@ -5,6 +5,8 @@ import 'package:chatty/widgets/widgets.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../helper/helper_function.dart';
+
 class UserProfile extends StatefulWidget {
   const UserProfile({super.key});
 
@@ -69,6 +71,7 @@ class _UserProfileState extends State<UserProfile> {
                                         FirebaseAuth.instance.currentUser!.uid,
                                         "profile",
                                         profile);
+                                    HelperFunction.userInformations.mode = 0;
                                   });
                                 },
                                 child: const CircleAvatar(
@@ -111,6 +114,7 @@ class _UserProfileState extends State<UserProfile> {
                                         FirebaseAuth.instance.currentUser!.uid,
                                         "profile",
                                         profile);
+                                    HelperFunction.userInformations.mode = 1;
                                   });
                                 },
                                 child: const CircleAvatar(

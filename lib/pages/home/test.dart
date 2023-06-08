@@ -17,6 +17,9 @@ class MyApps extends StatelessWidget {
       appBar: AppBar(
         actions: [
           PopupMenuButton(
+            child: Container(
+              child: Text("data"),
+            ),
             position: PopupMenuPosition.under,
             itemBuilder: (BuildContext context) {
               return [

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:chatty/helper/helper_function.dart';
 import 'package:chatty/service/database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,13 +23,14 @@ class AuthService {
 
   //register
   Future registerUserWithEmailAndPassword(
-      String fullName, String email, String password) async {
+      String fullName, String email, String password, File imgLink) async {
     try {
       User user = (await firebaseAuth.createUserWithEmailAndPassword(
               email: email, password: password))
           .user!;
       if (user != null) {
-        await DatabaseService(uid: user.uid).savingUserData(fullName, email);
+        await DatabaseService(uid: user.uid)
+            .savingUserData(fullName, email, imgLink);
         return true;
       }
     } on FirebaseAuthException catch (e) {

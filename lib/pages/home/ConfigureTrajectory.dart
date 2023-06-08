@@ -1,6 +1,15 @@
+import 'package:chatty/helper/helper_function.dart';
+import 'package:chatty/model/location.model.dart';
+import 'package:chatty/pages/home/CallConductor.dart';
+import 'package:chatty/pages/home/MapManager.dart';
+import 'package:chatty/pages/search_page.dart';
+import 'package:chatty/service/map.service.manager.dart';
+import 'package:chatty/widgets/widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator_platform_interface/src/models/position.dart';
 
 import '../../widgets/TextInput.dart';
+import 'Home.dart';
 
 class ConfigureTrajectory extends StatefulWidget {
   const ConfigureTrajectory({super.key});
@@ -8,6 +17,9 @@ class ConfigureTrajectory extends StatefulWidget {
   @override
   State<ConfigureTrajectory> createState() => _ConfigureTrajectoryState();
 }
+
+late Position departurePL;
+late Position targetPL;
 
 class _ConfigureTrajectoryState extends State<ConfigureTrajectory>
     with SingleTickerProviderStateMixin {
@@ -17,6 +29,7 @@ class _ConfigureTrajectoryState extends State<ConfigureTrajectory>
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this);
+    HelperFunction.departurePoint = HelperFunction.userLocation;
   }
 
   @override
@@ -25,16 +38,19 @@ class _ConfigureTrajectoryState extends State<ConfigureTrajectory>
     super.dispose();
   }
 
+  static String departurePoint = "My Position";
+  static String targetPoint = "Destination";
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return SizedBox(
       child: Padding(
           padding: const EdgeInsets.all(5),
           child: Center(
               child: Container(
             width: MediaQuery.of(context).size.width * .95,
             decoration: const BoxDecoration(
-                color: Colors.white,
+                color: Color.fromARGB(93, 255, 255, 255),
                 boxShadow: [],
                 borderRadius: BorderRadius.all(Radius.circular(20))),
             child: Column(
@@ -54,58 +70,94 @@ class _ConfigureTrajectoryState extends State<ConfigureTrajectory>
                 const SizedBox(
                   height: 15,
                 ),
-                TextInput(
-                    isPassword: false,
-                    placeholder: "Departure point",
-                    prefixIcon: const Icon(
-                      Icons.location_on,
-                      color: Color.fromARGB(255, 53, 181, 222),
+                Container(
+                  width: MediaQuery.of(context).size.width * .8,
+                  decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(5))),
+                  child: ListTile(
+                    title: GestureDetector(
+                      onTap: () => nextScreen(
+                          context,
+                          Search(
+                            act: "cp",
+                          )),
+                      child: SizedBox(
+                        height: 20,
+                        //decoration: const BoxDecoration(color: Colors.white),
+                        child: Text(HelperFunction.departurePoint.address != ""
+                            ? HelperFunction.departurePoint.address
+                            : departurePoint),
+                      ),
                     ),
-                    sufixIcon: const Icon(Icons.abc),
-                    onChange: null,
-                    validator: null),
-                const SizedBox(
-                  height: 15,
+                    leading: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: const BoxDecoration(
+                          color: Color.fromARGB(255, 53, 181, 222),
+                          borderRadius: BorderRadius.all(Radius.circular(5))),
+                      child: const Icon(
+                        Icons.my_location,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
-                TextInput(
-                    isPassword: false,
-                    placeholder: "Departure point",
-                    prefixIcon: const Icon(
-                      Icons.my_location_rounded,
-                      color: Color.fromARGB(255, 53, 181, 222),
-                    ),
-                    sufixIcon: const Icon(Icons.abc),
-                    onChange: null,
-                    validator: null),
                 const SizedBox(
                   height: 15,
                 ),
                 Container(
                   width: MediaQuery.of(context).size.width * .8,
                   decoration: const BoxDecoration(
-                    color: Color.fromARGB(255, 239, 239, 239),
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(3),
-                    child: TextFormField(
-                        textAlign: TextAlign.center,
-                        decoration: const InputDecoration(
-                            hintText: "0.0 MAD",
-                            border: InputBorder.none,
-                            hintStyle: TextStyle(fontWeight: FontWeight.bold))),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.all(Radius.circular(5))),
+                  child: ListTile(
+                    title: GestureDetector(
+                      onTap: () => nextScreen(
+                          context,
+                          Search(
+                            act: "dst",
+                          )),
+                      child: SizedBox(
+                        height: 20,
+                        //decoration: const BoxDecoration(color: Colors.white),
+                        child: Text(
+                            HelperFunction.destinationPoint.address != ""
+                                ? HelperFunction.destinationPoint.address
+                                : departurePoint),
+                      ),
+                    ),
+                    leading: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: const BoxDecoration(
+                          color: Color.fromARGB(255, 53, 181, 222),
+                          borderRadius: BorderRadius.all(Radius.circular(5))),
+                      child: const Icon(
+                        Icons.location_on,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(
                   height: 15,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Checkbox(value: false, onChanged: (val) {}),
-                    const Text("I don't know my destination")
-                  ],
+                Container(
+                  width: MediaQuery.of(context).size.width * .8,
+                  decoration: const BoxDecoration(
+                    //color: Color.fromARGB(255, 239, 239, 239),
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(3),
+                    child: Text(
+                      "0.0 MAD",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Color.fromARGB(255, 49, 49, 49)),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ),
                 const SizedBox(
                   height: 15,
@@ -116,6 +168,33 @@ class _ConfigureTrajectoryState extends State<ConfigureTrajectory>
                     "This is the estimated price releted to the trajectory you defined.",
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+                MaterialButton(
+                  onPressed: () {
+                    setState(() {
+                      nextScreen(context, const CallDriver());
+                    });
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * .8,
+                    height: 50,
+                    decoration: const BoxDecoration(
+                      color: Color.fromARGB(255, 53, 181, 222),
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(3),
+                      child: Center(
+                        child: Text(
+                          "Call a driver",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(

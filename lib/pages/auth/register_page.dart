@@ -1,6 +1,11 @@
+import 'dart:io';
+
+import 'package:chatty/helper/galeryImage.dart';
 import 'package:chatty/helper/helper_function.dart';
 import 'package:chatty/pages/auth/login_page.dart';
 import 'package:chatty/service/auth_service.dart';
+import 'package:chatty/service/database_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/widgets.dart';
@@ -19,7 +24,16 @@ class _RegisterPageState extends State<RegisterPage> {
   String email = "";
   String password = "";
   String fullName = "";
+  late File _image;
   AuthService authService = AuthService();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _image = File("");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,22 +69,52 @@ class _RegisterPageState extends State<RegisterPage> {
                               fontSize: 15, fontWeight: FontWeight.w300),
                         ),
                         const SizedBox(height: 15),
-                        Container(
-                          width: 100,
-                          height: 100,
-                          decoration: const BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(50)),
-                              color: Colors.red,
-                              image: DecorationImage(
-                                  fit: BoxFit.fill,
-                                  image: AssetImage(
-                                    "assets/images/ml.png",
-                                  ))),
-                          /*child: Padding(
-                      padding: EdgeInsets.all(5),
-                      child: ,
-                    ),*/
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      width: 5,
+                                      color: const Color.fromARGB(
+                                          255, 53, 181, 222)),
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(60),
+                                  )),
+                              child: CircleAvatar(
+                                radius: 55,
+                                child: _image.path != ""
+                                    ? ClipOval(
+                                        child: Image.file(
+                                          _image,
+                                          fit: BoxFit.fill,
+                                        ),
+                                      )
+                                    : ClipOval(
+                                        child: Image.asset(
+                                          "assets/images/ml.png",
+                                          fit: BoxFit.fill,
+                                          scale: 50,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    var picekdImg = ImageSelect.getImage();
+                                    setState(() {});
+                                    picekdImg.then((value) {
+                                      _image = File(value!.path);
+                                      setState(() {});
+                                      //print("The path is :" + value!.path);
+                                    });
+                                  });
+                                },
+                                icon: const Icon(Icons.camera_alt))
+                          ],
                         ),
                         const SizedBox(height: 15),
                         TextFormField(
@@ -193,13 +237,19 @@ class _RegisterPageState extends State<RegisterPage> {
       });
     }
     await authService
-        .registerUserWithEmailAndPassword(fullName, email, password)
+        .registerUserWithEmailAndPassword(fullName, email, password, _image)
         .then((value) async {
       if (value == true) {
         //saving the shared preference state
         await HelperFunction.saveUserLoggedInStatus(true);
         await HelperFunction.saveUserEmailSF(email);
         await HelperFunction.saveUserNameSF(fullName);
+        HelperFunction.userInformations.name = fullName;
+        HelperFunction.userInformations.mailAddress = email;
+        HelperFunction.userInformations.imageLink = _image.path.split('/').last;
+        HelperFunction.userInformations.mode = 0;
+        HelperFunction.userInformations.uid =
+            FirebaseAuth.instance.currentUser!.uid;
         nextScreenReplace(context, const UserProfile());
       } else {
         showSnackbar(context, Colors.red, value);
